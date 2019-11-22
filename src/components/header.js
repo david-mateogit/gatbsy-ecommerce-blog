@@ -1,6 +1,7 @@
 import { Link } from 'gatsby';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
+import netlifyIdentity from 'netlify-identity-widget'
 
 import gatsbyLogo from '../images/gatsby-icon.png';
 
@@ -20,6 +21,8 @@ class Header extends Component {
   }
 
   componentDidMount() {
+    netlifyIdentity.init();
+
     if (window.Snipcart) {
       const count = window.Snipcart.api.items.count();
 
@@ -85,6 +88,8 @@ class Header extends Component {
             <NavLink to="/blog">Blog</NavLink>
 
             <NavLink to="/products">Store</NavLink>
+
+            <div data-netlify-identity-menu />
 
             {/* Shopping cart summary */}
             <div
