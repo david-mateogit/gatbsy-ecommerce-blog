@@ -5,6 +5,8 @@ import Layout from '../components/layout';
 
 const Blog = ({ data, pageContext }) => {
   const { currentPage, isFirstPage, isLastPage, totalPages } = pageContext;
+  const contentful = data.allContentfulBlogPost;
+
   const nextPage = `/blog/${String(currentPage + 1)}`;
   const prevPage =
     currentPage - 1 === 1 ? '/blog' : `/blog/${String(currentPage - 1)}`;
@@ -12,22 +14,22 @@ const Blog = ({ data, pageContext }) => {
     <Layout>
       <div>
         <h1 style={{ display: 'inlineBlock', borderBottom: '1px solid' }}>
-          Gatsby Garb Blog
+          Gatsby Personal Blog
         </h1>
-        <h4>{data.allMarkdownRemark.totalCount} Posts</h4>
-        {data.allMarkdownRemark.edges.map(({ node }) => (
+        <h4>{contentful.totalCount} Posts</h4>
+
+        {contentful.edges.map(({ node }) => (
           <div key={node.id}>
             <h3>
-              <Link to={`/posts${node.fields.slug}`}>
-                {node.frontmatter.title}{' '}
-              </Link>
+              <Link to={`/posts/${node.slug}`}>{node.title} </Link>
               <span style={{ color: '#bbb', fontSize: '16px' }}>
-                - {node.frontmatter.date}
+                - {node.createdAt}
               </span>{' '}
             </h3>
-            <p>{node.excerpt}</p>
+            <p>{node.body.childMarkdownRemark.excerpt}</p>
           </div>
         ))}
+
         {/* Pagination links */}
         <div
           style={{
@@ -61,27 +63,28 @@ const Blog = ({ data, pageContext }) => {
 export default Blog;
 
 export const query = graphql`
-  query($skip: Int!, $limit: Int!) {
-    allMarkdownRemark(
+  query($skip: Int!, $limit: Int) {
+    allContentfulBlogPost(
       skip: $skip
       limit: $limit
-      sort: { fields: [frontmatter___date], order: ASC }
+      sort: { fields: createdAt, order: DESC }
     ) {
-      totalCount
       edges {
         node {
-          fields {
-            slug
+          body {
+            body
+            childMarkdownRemark {
+              excerpt(pruneLength: 140)
+            }
           }
           id
-          frontmatter {
-            title
-            date(formatString: "MMM Do, YYYY")
-          }
-          excerpt
-          timeToRead
+          slug
+          title
+          tags
+          createdAt(formatString: "MMM Do, YYYY")
         }
       }
+      totalCount
     }
   }
 `;

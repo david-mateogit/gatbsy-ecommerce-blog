@@ -1,50 +1,46 @@
 const path = require('path');
-const { createFilePath } = require('gatsby-source-filesystem');
 
 const PostTemplate = path.resolve('./src/templates/post-template.js');
 const BlogTemplate = path.resolve('./src/templates/blog-template.js');
-
-exports.onCreateNode = ({ node, getNode, actions }) => {
-  const { createNodeField } = actions;
-  if (node.internal.type === 'MarkdownRemark') {
-    const slug = createFilePath({ node, getNode, basePath: 'posts' });
-    createNodeField({
-      node,
-      name: 'slug',
-      value: slug,
-    });
-  }
-};
+const ProductTemplate = path.resolve('./src/templates/product-template.js');
 
 exports.createPages = async ({ graphql, actions }) => {
   const { createPage } = actions;
   const result = await graphql(`
     {
-      allMarkdownRemark(limit: 1000) {
+      allContentfulProduct {
         edges {
           node {
-            fields {
-              slug
-            }
+            slug
+          }
+        }
+      }
+
+      allContentfulBlogPost {
+        edges {
+          node {
+            slug
+            id
           }
         }
       }
     }
   `);
 
-  const posts = result.data.allMarkdownRemark.edges;
-  posts.forEach(({ node: post }) => {
+  const contentfulPost = result.data.allContentfulBlogPost.edges;
+  contentfulPost.forEach(({ node: post }) => {
     createPage({
-      path: `posts${post.fields.slug}`,
+      path: `posts/${post.slug}`,
       component: PostTemplate,
       context: {
-        slug: post.fields.slug,
+        slug: post.slug,
+        id: post.id,
       },
     });
   });
 
   const postsPerPage = 2;
-  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const totalPages = Math.ceil(contentfulPost.length / postsPerPage);
 
   Array.from({ length: totalPages }).forEach((_, index) => {
     const currentPage = index + 1;
@@ -61,6 +57,17 @@ exports.createPages = async ({ graphql, actions }) => {
         isLastPage,
         currentPage,
         totalPages,
+      },
+    });
+  });
+
+  const products = result.data.allContentfulProduct.edges;
+  products.forEach(({ node: product }) => {
+    createPage({
+      path: `/products/${product.slug}`,
+      component: ProductTemplate,
+      context: {
+        slug: product.slug,
       },
     });
   });

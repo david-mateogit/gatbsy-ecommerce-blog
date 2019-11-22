@@ -37,7 +37,7 @@ const Layout = ({ children }) => {
         }}
       >
         <main>{children}</main>
-        <footer>
+        <footer style={{ marginTop: '20px' }}>
           <p>
             Built by {data.site.siteMetadata.author}, Created on{' '}
             {data.site.siteMetadata.createdAt}
